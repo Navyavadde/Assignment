@@ -19,18 +19,20 @@ public class PropertiesServer {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 // Handle client connection in a new thread
-                new Thread(new ClientHandler(clientSocket)).start();
+                 new Thread(new ClientHandler(clientSocket, directoryToWrite)).start();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private class ClientHandler implements Runnable {
+    private static class ClientHandler implements Runnable {
         private Socket clientSocket;
+	private Path directoryToWrite;
 
-        public ClientHandler(Socket clientSocket) {
-            this.clientSocket = clientSocket;
+         public ClientHandler(Socket socket, Path directoryToWrite) {
+            this.clientSocket = socket;
+            this.directoryToWrite = directoryToWrite;
         }
 
         @Override
@@ -42,6 +44,12 @@ public class PropertiesServer {
                 writePropertiesToFile(props);
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
